@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "refinet"
+version = "0.1.0"
+description = "Neural Network Realization of Affine Refinement Iterates"
+authors = [{name = "Gantumur", email = "gantumur@me.com"}]
+dependencies = [] # Zero dependencies by default!
+
+[project.optional-dependencies]
+test = ["pytest", "numpy"]
+export = ["torch"]
