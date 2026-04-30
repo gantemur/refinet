@@ -9,7 +9,7 @@ from refinet.geometry.library import create_dragon, initial_unit_segment
 
 # --- TOGGLE YOUR DRAGON HERE ---
 # Options: 'levy' or 'heighway'
-DRAGON_TYPE = 'heighway' 
+DRAGON_TYPE = 'heighway'
 
 def main():
     print(f"Fetching {DRAGON_TYPE.capitalize()} Dragon geometry from library...")
@@ -22,7 +22,7 @@ def main():
     gamma_0 = initial_unit_segment(p=2)
 
     # 3. Evaluate the Level 2 exact algebraic sum
-    n_depth = 12  # Depth 12 = 4096 segments
+    n_depth = 10  # Depth 12 = 4096 segments
     num_points = 4097 # One point per vertex
     
     print(f"Evaluating exact V^n \\gamma(t) at depth {n_depth}...")
@@ -41,13 +41,13 @@ def main():
     plt.figure(figsize=(8, 6))
     
     # Plot using a thinner line for the dense dragon curve
-    plt.plot(x_vals, y_vals, 'k-', linewidth=0.5)
+    plt.plot(x_vals, y_vals, 'm-', linewidth=1)
     
     plt.axis('equal')
     plt.axis('off') 
     plt.title(f"{DRAGON_TYPE.capitalize()} Dragon (Level 2 Exact Algebra) - Depth {n_depth}")
     
-    output_filename = f"dragon_{DRAGON_TYPE}_level2.png"
+    output_filename = f"dragon_{DRAGON_TYPE}_d{n_depth}_l2.png"
     plt.savefig(output_filename, dpi=300, bbox_inches='tight')
     print(f"Success! Saved to {output_filename}")
 

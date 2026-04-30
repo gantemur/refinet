@@ -1,0 +1,93 @@
+import sys
+import os
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Chunk massive paths to prevent Agg overflow on deep fractals
+plt.rcParams['agg.path.chunksize'] = 20000
+sys.path.insert(0, os.path.abspath('src'))
+
+from refinet.geometry.library import create_dragon, initial_unit_segment
+from refinet.cascade.exact import BlockCascadeEngine
+
+def get_stationary_anchored_data(engine, gamma_0, extra_B=None):
+    """Computes the compactly supported defect D(t) for stationary fixed-endpoint systems."""
+    def D_curve(t):
+        res = np.zeros(engine.p)
+        for j in range(engine.num_A):
+            arg = engine.M * t - j
+            res += engine.A[j] @ np.array(gamma_0(arg))
+        return (res - np.array(gamma_0(t))).tolist()
+        
+    B_curves = [D_curve] if extra_B is None else [D_curve, extra_B]
+    return gamma_0, B_curves, [[] for _ in B_curves]
+
+def render_curve(name, engine, base_curve, n_depth, B_curves=None, c_weights=None):
+    num_points = (engine.M ** n_depth) + 1
+    
+    t_vals = np.linspace(0, 1, num_points)
+    x_vals, y_vals = [], []
+    def zero_curve(t): return [0.0] * engine.p
+    
+    for t in t_vals:
+        # Standard Affine Routing for homogeneous/stationary curves
+        pt_cascade = engine.evaluate_affine(
+            t, n_depth, zero_curve, 
+            B_curves=B_curves or [], 
+            c_weights_list=c_weights or []
+        )
+        pt = np.array(base_curve(t)) + np.array(pt_cascade)
+        x_vals.append(pt[0])
+        y_vals.append(pt[1])
+        
+    return x_vals, y_vals
+
+def main():
+    print("--- Dragon Curve Evolution Rendering (Depths 1 to 15) ---")
+    start_global = time.time()
+    
+    # 1. Initialize the exact algebraic system once
+    system = create_dragon('heighway')
+    engine = BlockCascadeEngine(system, K_min=0, K_max=1)
+    gamma_0 = initial_unit_segment(p=2)
+    
+    # Extract the homogeneous boundary mismatch
+    base_curve, B_curves, c_weights = get_stationary_anchored_data(engine, gamma_0)
+    
+    # 2. Set up the 3x5 Grid Figure
+    fig, axes = plt.subplots(3, 5, figsize=(20, 12))
+    axes = axes.flatten()
+    
+    # 3. Cascade across depths 1 through 15
+    for i in range(15):
+        n_depth = i + 1
+        ax = axes[i]
+        
+        num_points = (engine.M ** n_depth) + 1
+        print(f"Rendering depth {n_depth} ({num_points} vertices)...", end="", flush=True)
+        
+        t0 = time.time()
+        x_vals, y_vals = render_curve(
+            "Heighway Dragon", engine, base_curve, n_depth, 
+            B_curves=B_curves, c_weights=c_weights
+        )
+        print(f" done in {time.time() - t0:.3f}s")
+        
+        # Dynamically thin the line weight as the geometry densifies
+        lw = max(0.05, 2.0 / (n_depth + 1))
+        
+        ax.plot(x_vals, y_vals, 'b-', linewidth=lw)
+        ax.set_title(f"$n={n_depth}$", fontsize=16)
+        ax.set_aspect('equal')
+        ax.axis('off')
+    
+    plt.tight_layout()
+    output_filename = "dragon_evolution_n1_to_n15.png"
+    plt.savefig(output_filename, dpi=600, bbox_inches='tight')
+    
+    print(f"\nSuccess! Full evolution plotted and saved to {output_filename}")
+    print(f"Total execution time: {time.time() - start_global:.2f} seconds.")
+
+if __name__ == "__main__":
+    main()

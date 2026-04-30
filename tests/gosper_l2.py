@@ -19,7 +19,7 @@ def main():
     gamma_0 = initial_stacked_unit_segment(p=2, r=2)
 
     # 3. Evaluate the Level 2 exact algebraic sum
-    n_depth = 4  # Depth 4 yields 2401 segments
+    n_depth = 3  # Depth 4 yields 2401 segments
     num_points = 2402 
     
     print(f"Evaluating exact V^n \\gamma(t) at depth {n_depth}...")
