@@ -17,7 +17,7 @@ Where:
 * $A_j \in \mathbb{R}^{p \times p}$ are finite transition matrices.
 * $B(t)$ is a compactly supported CPwL forcing sequence.
 
-To bypass the naive $O(M^n)$ exponential complexity of recursive geometric evaluation, `refinet` implements an $M$-ary topological router and exact backward recursion to evaluate the iterates $W^n\gamma$ in strict **$O(n)$ time**.
+To bypass the naive $O(M^n)$ exponential complexity of recursive geometric evaluation, `refinet` implements an $M$-ary topological router and exact backward recursion to evaluate the iterates $W^n\gamma$ in strict **$O(n)$ time**. The framework natively scales from 1D operators to full 2D Tensor-Product matrix fields.
 
 ## Architecture
 
@@ -29,10 +29,10 @@ The framework is strictly separated into a 5-Level Architecture bridging abstrac
   The universal contract (`AffineRefinementSystem`). Encapsulates $A_j$, $M$, $p$, support bounds $L$, and natively houses non-stationary drifting weights and basis spans.
 * **Level 3: The $O(n)$ Cascade Engine (`src/refinet/cascade/exact.py`)**
   Vectorizes the curve space $G(x) \in \mathbb{R}^{pL}$ and compiles global block transition matrices $T_q$. Implements Exact Backward Recursion (Theorem 4.16) utilizing an $M$-ary fractional residual router (Lemma 4.3). Sub-second exact rendering of deep fractals.
-* **Level 4: CPwL Surrogate Simulation (Active Development)**
-  Bridges algorithmic python logic to constrained Neural Network topology. Simulates the continuous residual surrogates $\tilde{R}_1, \tilde{R}_2$ and the fractional decoding channels $\hat{c}_m, \hat{r}_m$.
-* **Level 5: Raw Neural Weights (Future)**
-  Compilation of the surrogate cascades into hardcoded, executable PyTorch/JAX parameter tensors.
+* **Level 4: CPwL Surrogate Simulation (`src/refinet/cascade/surrogate2d.py`)**
+  Bridges abstract algorithmic logic to constrained Neural Network topology. Simulates the continuous residual surrogates, fractional decoding channels, and exact left co-vector (row-vector) forward matrix propagation. Identical in geometric behavior to the compiled deep network.
+* **Level 5: Exact PyTorch Realization (`src/refinet/network/model2d.py`)**
+  Strict compilation of the affine cascade into an executable, exact deep ReLU PyTorch `nn.Module`. Utilizes concurrent matrix field evaluations, $M$-ary topological loop controllers, and exact CPwL Product Gadgets. Enforces native 64-bit float precision to achieve mathematically flawless, zero-deviation evaluation of the theoretical framework.
 
 ## Supported Geometry
 The builder library natively supports and accurately compiles:
@@ -40,3 +40,4 @@ The builder library natively supports and accurately compiles:
 * **Finite-State Affine Systems:** Gosper Curve, Sierpinski Arrowhead (via state-stacking where dim $= p \times r$).
 * **Stationary Affine Systems:** Morton-like Z-order curves.
 * **Stage-Dependent (Non-Stationary) Systems:** Infinite finite-span Hilbert and Peano space-filling curves.
+* **2D Tensor-Product Systems:** Exact higher-dimensional evaluations utilizing polyhedral partition of unity selectors and bounded nested product gadgets.
