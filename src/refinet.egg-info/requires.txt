@@ -1,7 +1,0 @@
-
-[export]
-torch
-
-[test]
-pytest
-numpy
