@@ -154,3 +154,55 @@ class BlockCascadeEngine:
         gamma_base = final_anchor(t) if final_anchor else [0.0] * self.p
         
         return (np.array(gamma_base) + s_n).tolist()
+
+class TensorBlockCascadeEngine:
+    """
+    Level 3 (2D): Compiles the tensor-product block transition matrices
+    and vectorizes the 2D state over the L1 x L2 support window.
+    """
+    def __init__(self, system):
+        self.system = system
+        self.mask = system.mask
+        self.L1 = system.L1
+        self.L2 = system.L2
+        self.dim = self.L1 * self.L2
+        
+        # 1D routers applied independently to x and y
+        self.router_x = MaryRouter(system.M)
+        self.router_y = MaryRouter(system.M)
+        
+        self.T = self._compile_T_matrices()
+
+    def _patch_to_index(self, a, b):
+        """Maps 1-based physical patch indices (a, b) to 0-based 1D matrix indices."""
+        return (a - 1) * self.L2 + (b - 1)
+
+    def _compile_T_matrices(self):
+        """
+        Compiles the 4 global block transition matrices T_(q1, q2).
+        Implements Equation (2.3) exactly.
+        """
+        T = {}
+        for q1 in [0, 1]:
+            for q2 in [0, 1]:
+                T_q = np.zeros((self.dim, self.dim), dtype=float)
+                
+                # Iterate over target patches (a, b)
+                for a in range(1, self.L1 + 1):
+                    for b in range(1, self.L2 + 1):
+                        row_idx = self._patch_to_index(a, b)
+                        
+                        # Iterate over source patches (alpha, beta)
+                        for alpha in range(1, self.L1 + 1):
+                            for beta in range(1, self.L2 + 1):
+                                col_idx = self._patch_to_index(alpha, beta)
+                                
+                                # Exact mask translation from Eq 2.3
+                                j = q1 + 2 * (a - 1) - (alpha - 1)
+                                k = q2 + 2 * (b - 1) - (beta - 1)
+                                
+                                if (j, k) in self.mask:
+                                    T_q[row_idx, col_idx] = self.mask[(j, k)]
+                                    
+                T[(q1, q2)] = T_q
+        return T

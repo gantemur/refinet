@@ -140,3 +140,16 @@ class AffineRefinementSystem:
             anchor_val = final_anchor(t)
             res = self._add_vectors(anchor_val, homog_defect)
             return self._add_vectors(res, defect_forcing)
+
+class TensorProductSystem:
+    """
+    Level 2 (2D): Evaluates global tensor-product refinement equations.
+    Natively handles homogeneous scalar dyadic refinement on R^2.
+    """
+    def __init__(self, mask_coeffs, L1=1, L2=1):
+        # mask_coeffs is a dict mapping (j, k) integer tuples to float values
+        self.mask = mask_coeffs
+        self.L1 = L1
+        self.L2 = L2
+        self.M = 2 # Strictly dyadic for the initial tensor-product theorem
+        self.p = 1 # Scalar function output
